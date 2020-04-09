@@ -42,6 +42,9 @@ fi
 # (Temporarily) disable zsh-autoenv. This gets looked at in the chpwd handler.
 : ${AUTOENV_DISABLED:=0}
 
+# Check authorization of file.
+: ${AUTOENV_CHECK_AUTH:=1}
+
 # Public helper functions, which can be used from your .autoenv.zsh files:
 
 # Source the next .autoenv.zsh file from parent directories.
@@ -298,21 +301,23 @@ _autoenv_check_authorized_env_file() {
     return 1
   fi
   if ! _autoenv_authorized_env_file $1; then
-    echo "Attempting to load unauthorized env file!" >&2
-    command ls -l $1 >&2
-    echo >&2
-    echo "**********************************************" >&2
-    echo >&2
-    command cat $1 >&2
-    echo >&2
-    echo "**********************************************" >&2
-    echo >&2
-    echo -n "Would you like to authorize it? (type 'yes') " >&2
-    # echo "Would you like to authorize it?"
-    # echo "('yes' to allow, 'no' to not being asked again; otherwise ignore it for the shell) "
+    if [[ "$AUTOENV_CHECK_AUTH" = "1" ]]; then
+      echo "Attempting to load unauthorized env file!" >&2
+      command ls -l $1 >&2
+      echo >&2
+      echo "**********************************************" >&2
+      echo >&2
+      command cat $1 >&2
+      echo >&2
+      echo "**********************************************" >&2
+      echo >&2
+      echo -n "Would you like to authorize it? (type 'yes') " >&2
+      # echo "Would you like to authorize it?"
+      # echo "('yes' to allow, 'no' to not being asked again; otherwise ignore it for the shell) "
 
-    if ! _autoenv_ask_for_yes; then
-      return 1
+      if ! _autoenv_ask_for_yes; then
+        return 1
+      fi
     fi
 
     _autoenv_authorize $1
